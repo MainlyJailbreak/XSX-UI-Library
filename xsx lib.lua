@@ -1772,27 +1772,37 @@ function library:Init(Config)
 			end
 			keybindButtonLabel:GetPropertyChangedSignal("Text"):Connect(ResizeKeybind)
 			ResizeKeybind()
+local ChosenKey = default
 
-			local ChosenKey = default
-			keybindButton.MouseButton1Click:Connect(function()
-				keybindButtonLabel.Text = "..."
-				local InputWait = UserInputService.InputBegan:wait()
-				if UserInputService.WindowFocused and InputWait.KeyCode.Name ~= "Unknown" then
-					local Result = Shortcuts[InputWait.KeyCode.Name] or InputWait.KeyCode.Name
-					keybindButtonLabel.Text = Result
-					ChosenKey = InputWait.KeyCode.Name
-				end
-			end)
+local function handleKeybindInput(label)
+	label.Text = "..."
+	local InputWait = UserInputService.InputBegan:Wait()
 
-			keybind.MouseButton1Click:Connect(function()
-				keybindButtonLabel.Text = ". . ."
-				local InputWait = UserInputService.InputBegan:wait()
-				if UserInputService.WindowFocused and InputWait.KeyCode.Name ~= "Unknown" then
-					local Result = Shortcuts[InputWait.KeyCode.Name] or InputWait.KeyCode.Name
-					keybindButtonLabel.Text = Result
-					ChosenKey = InputWait.KeyCode.Name
-				end
-			end)
+	if not UserInputService.WindowFocused then
+		label.Text = "None"
+		return
+	end
+
+	if InputWait.UserInputType == Enum.UserInputType.Keyboard then
+		if InputWait.KeyCode.Name ~= "Unknown" then
+			local Result = Shortcuts[InputWait.KeyCode.Name] or InputWait.KeyCode.Name
+			label.Text = Result
+			ChosenKey = InputWait.KeyCode.Name
+		else
+			label.Text = "Invalid"
+		end
+	else
+		label.Text = "Invalid"
+	end
+end
+
+keybindButton.MouseButton1Click:Connect(function()
+	handleKeybindInput(keybindButtonLabel)
+end)
+
+keybind.MouseButton1Click:Connect(function()
+	handleKeybindInput(keybindButtonLabel)
+end)
 
 			--local ChatTextBox = Player.PlayerGui.Chat.Frame.ChatBarParentFrame.Frame.BoxFrame.Frame.ChatBar
 			if UserInputService.WindowFocused then
